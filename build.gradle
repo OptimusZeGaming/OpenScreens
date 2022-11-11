@@ -1,53 +1,81 @@
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
+        mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:5.1+'
     }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'maven-publish'
 
+version = "$mc_version}-${mod_version}"
+group = "$maven_group}"
+archivesBaseName = "${mod_id}"
 
-version = "${project.mc_version}-${project.mod_version}"
-group = project.maven_group
-archivesBaseName = project.mod_id
-
-sourceCompatibility = targetCompatibility = '1.8'
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
-}
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-    version = "${project.mc_version}-${project.forge_version}"
-    runDir = "run"
-    mappings = project.mappings_version
-	replace "@VERSION@", project.mod_version
+
+    mappings channel: "${mappings_channel}", version: "${mappings_version}"
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+
+        }
+
+        server {
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+
+        }
+    }
 }
 
 repositories {
-    maven { 
-        url = "http://maven.cil.li/"
+    maven {
+        name = "OC"
+        url = "https://maven.cil.li/"
 	}
 	maven {
         name = "JEI"
-        url = "http://dvs1.progwml6.com/files/maven"
+        url = "https://dvs1.progwml6.com/files/maven"
 	}
 }
 
 dependencies {
-    deobfCompile "li.cil.oc:OpenComputers:MC${project.mc_version}-${project.opencomputers_version}"
-    deobfCompile "mezz.jei:jei_${project.mc_version}:${project.jei_version}"
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
+
+    compileOnly 'org.apache.logging.log4j:log4j-api:2.19.0'
+    compileOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
+
+    compileOnly "li.cil.oc:OpenComputers:MC${mc_version}-${opencomputers_version}"
+    compileOnly "mezz.jei:jei_${mc_version}:${jei_version}"
 }
 
 processResources {
     inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+    inputs.property "mcversion", "${mod_version}"
 
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version':project.version, 'mcversion':mod_version
     }
         
     from(sourceSets.main.resources.srcDirs) {
